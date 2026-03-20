@@ -18,9 +18,12 @@ app.use(cors({ credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(tenantMiddleware);
+// Public routes - NO tenant middleware
 app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+
+// Protected routes - WITH tenant middleware
+app.use(tenantMiddleware);
 app.use('/api/audit-logs', auditRoutes);
 
 app.listen(PORT, () => {
