@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantPlan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  PLANLAMA
+  SATINALMA
+  TASERON
+  HAKEDIS
+  USER
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  APPROVE
+  REJECT
+}
+
+model Tenant {
+  id        String     @id @default(uuid())
+  name      String
+  slug      String     @unique
+  plan      TenantPlan @default(FREE)
+  status    String     @default("active")
+  createdAt DateTime   @default(now())
+  users     User[]
+  projects  Project[]
+  auditLogs AuditLog[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  tenantId     String
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  email        String
+  passwordHash String
+  name         String
+  role         UserRole @default(USER)
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  auditLogs    AuditLog[]
+
+  @@unique([tenantId, email])
+}
+
+model Project {
+  id          String        @id @default(uuid())
+  tenantId    String
+  tenant      Tenant        @relation(fields: [tenantId], references: [id])
+  name        String
+  description String?
+  status      ProjectStatus @default(DRAFT)
+  budget      Decimal?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+}
+
+model AuditLog {
+  id        String     @id @default(uuid())
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id])
+  action    AuditAction
+  entity    String
+  entityId  String?
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  createdAt DateTime   @default(now())
+}
