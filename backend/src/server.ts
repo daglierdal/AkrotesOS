@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes';
 import auditRoutes from './modules/audit/audit.routes';
+import healthRoutes from './routes/health.routes';
 import { tenantMiddleware } from './middleware/tenant.middleware';
 
 dotenv.config();
@@ -18,12 +19,9 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(tenantMiddleware);
+app.use('/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/audit-logs', auditRoutes);
-
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
