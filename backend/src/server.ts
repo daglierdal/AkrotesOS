@@ -11,6 +11,7 @@ import healthRoutes from './routes/health.routes';
 import customerRoutes from './modules/customers/customer.routes';
 import projectRoutes from './modules/projects/project.routes';
 import projectMemberRoutes from './modules/projects/project-member.routes';
+import boqRoutes from './modules/boq/boq.routes';
 import { tenantMiddleware } from './middleware/tenant.middleware';
 import { authMiddleware } from './middleware/auth.middleware';
 
@@ -33,6 +34,7 @@ app.use('/api/audit-logs', auditRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/projects/:id/members', projectMemberRoutes);
+app.use('/api', boqRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
