@@ -40,16 +40,18 @@ router.get('/:id', authMiddleware, tenantMiddleware, async (req: Request, res: R
 router.post('/', authMiddleware, tenantMiddleware, async (req: Request, res: Response) => {
   try {
     const tenantId = req.tenantId!;
-    const { name, email, phone, notes } = req.body;
+    const { name, contactPerson, email, phone, address, notes } = req.body;
     
-    if (!name) {
+    if (!name || name.trim() === '') {
       return res.status(400).json({ success: false, error: 'Name is required' });
     }
     
     const customer = await customerService.create(tenantId, {
       name,
+      contactPerson,
       email,
       phone,
+      address,
       notes,
     });
     
@@ -65,12 +67,14 @@ router.put('/:id', authMiddleware, tenantMiddleware, async (req: Request, res: R
   try {
     const id = req.params.id as string;
     const tenantId = req.tenantId!;
-    const { name, email, phone, notes } = req.body;
+    const { name, contactPerson, email, phone, address, notes } = req.body;
     
     const customer = await customerService.update(id, tenantId, {
       name,
+      contactPerson,
       email,
       phone,
+      address,
       notes,
     });
     

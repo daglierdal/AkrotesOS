@@ -3,15 +3,19 @@ import prisma from '../../lib/prisma';
 
 export interface CreateCustomerInput {
   name: string;
+  contactPerson?: string;
   email?: string;
   phone?: string;
+  address?: string;
   notes?: string;
 }
 
 export interface UpdateCustomerInput {
   name?: string;
+  contactPerson?: string;
   email?: string;
   phone?: string;
+  address?: string;
   notes?: string;
 }
 
