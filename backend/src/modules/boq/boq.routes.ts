@@ -190,12 +190,12 @@ router.put('/items/:itemId', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Item not found' });
     }
     
-    // Recalculate prices if material or labor price changed
-    if (updateData.materialUnitPrice !== undefined || updateData.laborUnitPrice !== undefined) {
+    // Recalculate prices if material, labor price, or quantity changed
+    if (updateData.materialUnitPrice !== undefined || updateData.laborUnitPrice !== undefined || updateData.quantity !== undefined) {
       const mat = updateData.materialUnitPrice !== undefined ? Number(updateData.materialUnitPrice) : Number(currentItem.materialUnitPrice);
       const lab = updateData.laborUnitPrice !== undefined ? Number(updateData.laborUnitPrice) : Number(currentItem.laborUnitPrice);
       updateData.totalUnitPrice = mat + lab;
-      
+
       const qty = updateData.quantity !== undefined ? Number(updateData.quantity) : Number(currentItem.quantity);
       updateData.totalPrice = qty * updateData.totalUnitPrice;
     }
