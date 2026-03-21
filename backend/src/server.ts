@@ -19,7 +19,10 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(helmet());
-app.use(cors({ credentials: true }));
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:3002', 'http://127.0.0.1:3000', 'http://127.0.0.1:3002'],
+  credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
