@@ -155,6 +155,98 @@ async function main() {
     console.log('✅ Project member added: SATINALMA');
   }
 
+  // 6. BOQ (Poz) Verileri - Disiplin, Section ve Pozlar
+  console.log('🌱 Seeding BOQ data...');
+
+  // Disiplin: İnşaat
+  const discipline = await prisma.discipline.upsert({
+    where: { id: 'demo-discipline-ins' },
+    update: {},
+    create: {
+      id: 'demo-discipline-ins',
+      projectId: project1.id,
+      tenantId: tenant.id,
+      name: 'İnşaat',
+      code: 'INS',
+      sortOrder: 1,
+    },
+  });
+  console.log('✅ Discipline created:', discipline.name);
+
+  // Section 1: 01-YIKIM VE SÖKÜM
+  const section1 = await prisma.section.upsert({
+    where: { id: 'demo-section-01' },
+    update: {},
+    create: {
+      id: 'demo-section-01',
+      disciplineId: discipline.id,
+      tenantId: tenant.id,
+      name: '01-YIKIM VE SÖKÜM',
+      code: '01',
+      sortOrder: 1,
+    },
+  });
+  console.log('✅ Section created:', section1.name);
+
+  // POZ 01.01: Duvar Yıkım
+  const boqItem1 = await prisma.bOQItem.upsert({
+    where: { id: 'demo-boq-01-01' },
+    update: {},
+    create: {
+      id: 'demo-boq-01-01',
+      sectionId: section1.id,
+      tenantId: tenant.id,
+      pozNo: '01.01',
+      description: 'Duvar Yıkım',
+      unit: 'm²',
+      quantity: 120,
+      materialUnitPrice: 35,
+      laborUnitPrice: 50,
+      totalUnitPrice: 85,
+      totalPrice: 10200,
+      vatRate: 20,
+      sortOrder: 1,
+    },
+  });
+  console.log('✅ BOQ Item created:', boqItem1.pozNo, boqItem1.description);
+
+  // Section 2: 02-KABA İNŞAAT
+  const section2 = await prisma.section.upsert({
+    where: { id: 'demo-section-02' },
+    update: {},
+    create: {
+      id: 'demo-section-02',
+      disciplineId: discipline.id,
+      tenantId: tenant.id,
+      name: '02-KABA İNŞAAT',
+      code: '02',
+      sortOrder: 2,
+    },
+  });
+  console.log('✅ Section created:', section2.name);
+
+  // POZ 02.01: Beton Döküm
+  const boqItem2 = await prisma.bOQItem.upsert({
+    where: { id: 'demo-boq-02-01' },
+    update: {},
+    create: {
+      id: 'demo-boq-02-01',
+      sectionId: section2.id,
+      tenantId: tenant.id,
+      pozNo: '02.01',
+      description: 'Beton Döküm',
+      unit: 'm³',
+      quantity: 12,
+      materialUnitPrice: 450,
+      laborUnitPrice: 200,
+      totalUnitPrice: 650,
+      totalPrice: 7800,
+      vatRate: 20,
+      sortOrder: 1,
+    },
+  });
+  console.log('✅ BOQ Item created:', boqItem2.pozNo, boqItem2.description);
+
   console.log('🌱 Seeding completed!');
 }
 
