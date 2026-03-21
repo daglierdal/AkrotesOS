@@ -6,6 +6,8 @@
   :root {
     --background: 0 0% 0%;
     --foreground: 0 0% 93%;
+    --akrotes-blue: #4F8CFF;
+    --akrotes-dark: #111111;
     --card: 0 0% 7%;
     --card-foreground: 0 0% 93%;
     --popover: 0 0% 7%;
