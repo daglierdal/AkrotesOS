@@ -2,44 +2,69 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Edit, FileText, Calendar, DollarSign, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Edit, FileText, DollarSign, Users, CheckCircle } from "lucide-react";
 
 interface ProjectDetailProps {
   projectId?: string;
   onBack?: () => void;
 }
 
-const mockProject = {
-  id: "1",
-  name: "Zara İstanbul",
-  customer: "Inditex",
-  status: "active" as const,
-  progress: 75,
-  budget: 2500000,
-  spent: 1875000,
-  startDate: "2025-01-15",
-  endDate: "2025-06-30",
-  location: "İstanbul, Nişantaşı",
-  area: 850,
-  manager: "Ahmet Yılmaz",
-  description: "Zara mağazası için kapsamlı iç mimari ve inşaat projesi. Modern tasarım anlayışı ile premium perakende deneyimi.",
+const project = {
+  name: "MACFit Ankara Çankaya",
+  quotationAmount: 375000,
+  procurement: { budget: 185000, spent: 185000, percentage: 49.3 },
+  subcontractor: { budget: 145000, spent: 145000, percentage: 38.7 },
+  profitLoss: { amount: 33000, percentage: 8.8, color: "green" },
+  moduleStatus: [
+    { name: "BOQ", status: "Tamamlandı" },
+    { name: "Teklif", status: "Kabul Edildi" },
+    { name: "Satınalma", status: "Sipariş Verildi" },
+    { name: "Taşeron", status: "İş Başladı" }
+  ],
+  team: [
+    { name: "Asiye", role: "Planlama" },
+    { name: "Melike", role: "Satınalma" },
+    { name: "Erhan", role: "Taşeron" },
+    { name: "Buse", role: "Hakediş" }
+  ],
+  disciplineSummary: [
+    { name: "İnşaat", amount: 200000 },
+    { name: "Mekanik", amount: 80000 },
+    { name: "Elektrik", amount: 60000 },
+    { name: "Dekorasyon", amount: 35000 }
+  ]
 };
 
-const summaryData = [
-  { label: "Toplam Bütçe", value: `₺${mockProject.budget.toLocaleString("tr-TR")}`, icon: DollarSign },
-  { label: "Harcanan", value: `₺${mockProject.spent.toLocaleString("tr-TR")}`, icon: DollarSign },
-  { label: "Kalan", value: `₺${(mockProject.budget - mockProject.spent).toLocaleString("tr-TR")}`, icon: DollarSign },
-  { label: "Alan", value: `${mockProject.area} m²`, icon: FileText },
-  { label: "Başlangıç", value: mockProject.startDate, icon: Calendar },
-  { label: "Bitiş", value: mockProject.endDate, icon: Calendar },
-];
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "Tamamlandı":
+    case "Kabul Edildi":
+      return "bg-green-500/20 text-green-400 border-green-500/30";
+    case "Sipariş Verildi":
+    case "İş Başladı":
+      return "bg-blue-500/20 text-blue-400 border-blue-500/30";
+    default:
+      return "bg-[#222222] text-white";
+  }
+};
+
+const getRoleColor = (role: string) => {
+  switch (role) {
+    case "Planlama": return "bg-purple-500/20 text-purple-400";
+    case "Satınalma": return "bg-orange-500/20 text-orange-400";
+    case "Taşeron": return "bg-blue-500/20 text-blue-400";
+    case "Hakediş": return "bg-pink-500/20 text-pink-400";
+    default: return "bg-[#222222] text-white";
+  }
+};
 
 export function ProjectDetail({ onBack }: ProjectDetailProps) {
-  const progressPercent = Math.round((mockProject.spent / mockProject.budget) * 100);
+  const totalDiscipline = project.disciplineSummary.reduce((sum, d) => sum + d.amount, 0);
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
@@ -50,8 +75,8 @@ export function ProjectDetail({ onBack }: ProjectDetailProps) {
           <ArrowLeft className="w-4 h-4" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">{mockProject.name}</h1>
-          <p className="text-[#888888]">{mockProject.customer} • {mockProject.location}</p>
+          <h1 className="text-2xl font-bold text-white">{project.name}</h1>
+          <p className="text-[#888888]">Proje Detayları</p>
         </div>
         <Button className="bg-[#4F8CFF] hover:bg-[#4F8CFF]/90 text-black">
           <Edit className="w-4 h-4 mr-2" />
@@ -59,115 +84,125 @@ export function ProjectDetail({ onBack }: ProjectDetailProps) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {summaryData.slice(0, 3).map((item) => (
-          <Card key={item.label} className="bg-[#111111] border-[#222222]">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2">
-                <item.icon className="w-4 h-4 text-[#4F8CFF]" />
-                <p className="text-sm text-[#888888]">{item.label}</p>
-              </div>
-              <p className="text-2xl font-bold text-white mt-1">{item.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Financial Summary */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-[#4F8CFF]" />
+              <p className="text-sm text-[#888888]">Teklif Tutarı</p>
+            </div>
+            <p className="text-2xl font-bold text-white mt-1">
+              ₺{project.quotationAmount.toLocaleString("tr-TR")}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-orange-400" />
+              <p className="text-sm text-[#888888]">Satınalma</p>
+            </div>
+            <p className="text-2xl font-bold text-white mt-1">
+              ₺{project.procurement.spent.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-xs text-[#888888]">%{project.procurement.percentage}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-blue-400" />
+              <p className="text-sm text-[#888888]">Taşeron</p>
+            </div>
+            <p className="text-2xl font-bold text-white mt-1">
+              ₺{project.subcontractor.spent.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-xs text-[#888888]">%{project.subcontractor.percentage}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <p className="text-sm text-[#888888]">Kar/Zarar</p>
+            </div>
+            <p className="text-2xl font-bold text-green-400 mt-1">
+              ₺{project.profitLoss.amount.toLocaleString("tr-TR")}
+            </p>
+            <p className="text-xs text-green-400">%{project.profitLoss.percentage}</p>
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Module Status */}
       <Card className="bg-[#111111] border-[#222222]">
         <CardHeader>
-          <CardTitle className="text-lg text-white">İlerleme</CardTitle>
+          <CardTitle className="text-lg text-white">Modül Durumları</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[#888888]">Bütçe Kullanımı</span>
-            <span className="text-sm font-medium text-white">%{progressPercent}</span>
-          </div>
-          <div className="w-full h-2 bg-[#222222] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-[#4F8CFF] rounded-full transition-all"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-          <div className="flex items-center justify-between mt-4">
-            <span className="text-sm text-[#888888]">Proje İlerlemesi</span>
-            <span className="text-sm font-medium text-white">%{mockProject.progress}</span>
-          </div>
-          <div className="w-full h-2 bg-[#222222] rounded-full overflow-hidden mt-2">
-            <div
-              className="h-full bg-green-500 rounded-full transition-all"
-              style={{ width: `${mockProject.progress}%` }}
-            />
+          <div className="grid grid-cols-4 gap-4">
+            {project.moduleStatus.map((module) => (
+              <div key={module.name} className="p-4 rounded-lg bg-[#000000] border border-[#222222]">
+                <p className="text-sm text-[#888888]">{module.name}</p>
+                <Badge variant="outline" className={`mt-2 ${getStatusColor(module.status)}`}>
+                  {module.status}
+                </Badge>
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="bg-[#111111] border border-[#222222]">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-[#4F8CFF] data-[state=active]:text-black">
-            Genel Bakış
-          </TabsTrigger>
-          <TabsTrigger value="team" className="data-[state=active]:bg-[#4F8CFF] data-[state=active]:text-black">
-            Ekip
-          </TabsTrigger>
-          <TabsTrigger value="documents" className="data-[state=active]:bg-[#4F8CFF] data-[state=active]:text-black">
-            Dokümanlar
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="mt-4">
-          <Card className="bg-[#111111] border-[#222222]">
-            <CardHeader>
-              <CardTitle className="text-lg text-white">Proje Açıklaması</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-[#888888] leading-relaxed">{mockProject.description}</p>
-              <div className="grid grid-cols-2 gap-4 mt-6">
-                {summaryData.slice(3).map((item) => (
-                  <div key={item.label} className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-[#000000]">
-                      <item.icon className="w-4 h-4 text-[#4F8CFF]" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-[#888888]">{item.label}</p>
-                      <p className="text-sm font-medium text-white">{item.value}</p>
-                    </div>
+      {/* Team & Discipline Summary */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardHeader>
+            <CardTitle className="text-lg text-white">Proje Ekibi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {project.team.map((member) => (
+                <div key={member.name} className="flex items-center gap-3 p-3 rounded-lg bg-[#000000]">
+                  <div className="w-10 h-10 rounded-full bg-[#4F8CFF]/20 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-[#4F8CFF]" />
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="team" className="mt-4">
-          <Card className="bg-[#111111] border-[#222222]">
-            <CardHeader>
-              <CardTitle className="text-lg text-white">Proje Ekibi</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-[#000000]">
-                <div className="w-10 h-10 rounded-full bg-[#4F8CFF]/20 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-[#4F8CFF]" />
+                  <div className="flex-1">
+                    <p className="font-medium text-white">{member.name}</p>
+                  </div>
+                  <Badge variant="outline" className={getRoleColor(member.role)}>
+                    {member.role}
+                  </Badge>
                 </div>
-                <div>
-                  <p className="font-medium text-white">{mockProject.manager}</p>
-                  <p className="text-sm text-[#888888]">Proje Müdürü</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-        <TabsContent value="documents" className="mt-4">
-          <Card className="bg-[#111111] border-[#222222]">
-            <CardHeader>
-              <CardTitle className="text-lg text-white">Dokümanlar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-[#888888]">Henüz doküman eklenmemiş.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardHeader>
+            <CardTitle className="text-lg text-white">Disiplin Dağılımı</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {project.disciplineSummary.map((discipline) => (
+                <div key={discipline.name} className="flex items-center justify-between p-3 rounded-lg bg-[#000000]">
+                  <p className="text-white">{discipline.name}</p>
+                  <p className="font-medium text-[#4F8CFF]">
+                    ₺{discipline.amount.toLocaleString("tr-TR")}
+                  </p>
+                </div>
+              ))}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-[#222222] border border-[#333333]">
+                <p className="text-white font-medium">Toplam</p>
+                <p className="font-bold text-[#4F8CFF]">
+                  ₺{totalDiscipline.toLocaleString("tr-TR")}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -13,42 +13,60 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Search, Plus, Building2, Mail, Phone } from "lucide-react";
+import { Search, Plus, Building2, Phone } from "lucide-react";
 
 interface Customer {
   id: string;
   name: string;
-  company: string;
-  email: string;
+  contact: string;
   phone: string;
-  type: "corporate" | "individual";
-  projectCount: number;
-  totalBudget: number;
-  status: "active" | "inactive";
+  projects: number;
+  activeProjects: number;
+  revenue: number;
 }
 
-const mockCustomers: Customer[] = [
-  { id: "1", name: "Ali Yılmaz", company: "Inditex", email: "ali@inditex.com", phone: "+90 532 123 4567", type: "corporate", projectCount: 3, totalBudget: 7500000, status: "active" },
-  { id: "2", name: "Ayşe Kaya", company: "Mango Group", email: "ayse@mango.com", phone: "+90 533 234 5678", type: "corporate", projectCount: 2, totalBudget: 4200000, status: "active" },
-  { id: "3", name: "Mehmet Demir", company: "H&M Turkey", email: "mehmet@hm.com", phone: "+90 534 345 6789", type: "corporate", projectCount: 1, totalBudget: 3200000, status: "active" },
-  { id: "4", name: "Zeynep Şahin", company: "LC Waikiki", email: "zeynep@lcwaikiki.com", phone: "+90 535 456 7890", type: "corporate", projectCount: 4, totalBudget: 6800000, status: "active" },
-  { id: "5", name: "Can Özdemir", company: "Özdemir İnşaat", email: "can@ozdemir.com", phone: "+90 536 567 8901", type: "individual", projectCount: 1, totalBudget: 850000, status: "inactive" },
+const customers: Customer[] = [
+  { id: "1", name: "MACFit", contact: "Ahmet Yılmaz", phone: "0532 444 55 66", projects: 5, activeProjects: 3, revenue: 2450000 },
+  { id: "2", name: "Yargıcı", contact: "Selin Demir", phone: "0533 222 33 44", projects: 3, activeProjects: 1, revenue: 1180000 },
+  { id: "3", name: "Koton", contact: "Murat Kaya", phone: "0535 111 22 33", projects: 2, activeProjects: 1, revenue: 890000 }
 ];
+
+const summary = { totalCustomers: 3, totalActiveProjects: 5, totalRevenue: 4520000 };
 
 export function CustomerList() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
 
-  const filteredCustomers = mockCustomers.filter((customer) => {
+  const filteredCustomers = customers.filter((customer) => {
     const matchesSearch = customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         customer.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = typeFilter === "all" || customer.type === typeFilter;
-    return matchesSearch && matchesType;
+                         customer.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         customer.phone.includes(searchTerm);
+    return matchesSearch;
   });
 
   return (
     <div className="space-y-4">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardContent className="pt-6">
+            <p className="text-sm text-[#888888]">Toplam Müşteri</p>
+            <p className="text-2xl font-bold text-white">{summary.totalCustomers}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardContent className="pt-6">
+            <p className="text-sm text-[#888888]">Aktif Projeler</p>
+            <p className="text-2xl font-bold text-green-400">{summary.totalActiveProjects}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-[#111111] border-[#222222]">
+          <CardContent className="pt-6">
+            <p className="text-sm text-[#888888]">Toplam Gelir</p>
+            <p className="text-2xl font-bold text-[#4F8CFF]">₺{summary.totalRevenue.toLocaleString("tr-TR")}</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card className="bg-[#111111] border-[#222222]">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -64,21 +82,12 @@ export function CustomerList() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#888888]" />
               <Input
-                placeholder="Müşteri, şirket veya e-posta ara..."
+                placeholder="Müşteri veya iletişim kişisi ara..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-[#000000] border-[#222222] text-white placeholder:text-[#888888]"
               />
             </div>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-3 py-2 rounded-md bg-[#000000] border border-[#222222] text-white text-sm"
-            >
-              <option value="all">Tümü</option>
-              <option value="corporate">Kurumsal</option>
-              <option value="individual">Bireysel</option>
-            </select>
           </div>
 
           <div className="rounded-lg border border-[#222222] overflow-hidden">
@@ -86,11 +95,11 @@ export function CustomerList() {
               <TableHeader>
                 <TableRow className="border-[#222222] hover:bg-transparent">
                   <TableHead className="text-[#888888]">Müşteri</TableHead>
-                  <TableHead className="text-[#888888]">İletişim</TableHead>
-                  <TableHead className="text-[#888888]">Tip</TableHead>
-                  <TableHead className="text-[#888888]">Projeler</TableHead>
-                  <TableHead className="text-[#888888] text-right">Toplam Bütçe</TableHead>
-                  <TableHead className="text-[#888888] text-center">Durum</TableHead>
+                  <TableHead className="text-[#888888]">İletişim Kişisi</TableHead>
+                  <TableHead className="text-[#888888]">Telefon</TableHead>
+                  <TableHead className="text-[#888888] text-center">Toplam Proje</TableHead>
+                  <TableHead className="text-[#888888] text-center">Aktif Proje</TableHead>
+                  <TableHead className="text-[#888888] text-right">Gelir</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,47 +113,30 @@ export function CustomerList() {
                         <div className="w-8 h-8 rounded-full bg-[#4F8CFF]/20 flex items-center justify-center">
                           <Building2 className="w-4 h-4 text-[#4F8CFF]" />
                         </div>
-                        <div>
-                          <p className="font-medium text-white">{customer.name}</p>
-                          <p className="text-sm text-[#888888]">{customer.company}</p>
-                        </div>
+                        <p className="font-medium text-white">{customer.name}</p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm text-[#888888]">
-                          <Mail className="w-3 h-3" />
-                          {customer.email}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-[#888888]">
-                          <Phone className="w-3 h-3" />
-                          {customer.phone}
-                        </div>
-                      </div>
+                      <p className="text-white">{customer.contact}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={customer.type === "corporate"
-                          ? "bg-purple-500/20 text-purple-400 border-purple-500/30"
-                          : "bg-orange-500/20 text-orange-400 border-orange-500/30"
-                        }
-                      >
-                        {customer.type === "corporate" ? "Kurumsal" : "Bireysel"}
+                      <div className="flex items-center gap-2 text-sm text-[#888888]">
+                        <Phone className="w-3 h-3" />
+                        {customer.phone}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <span className="text-white">{customer.projects}</span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Badge variant="outline" className="bg-green-500/20 text-green-400 border-green-500/30">
+                        {customer.activeProjects}
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-white">{customer.projectCount}</span>
                     </TableCell>
                     <TableCell className="text-right">
                       <span className="text-white font-medium">
-                        ₺{customer.totalBudget.toLocaleString("tr-TR")}
+                        ₺{customer.revenue.toLocaleString("tr-TR")}
                       </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <div className={`w-2 h-2 rounded-full mx-auto ${
-                        customer.status === "active" ? "bg-green-500" : "bg-red-500"
-                      }`} />
                     </TableCell>
                   </TableRow>
                 ))}
