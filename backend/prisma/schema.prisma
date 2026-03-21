@@ -26,9 +26,14 @@ enum UserRole {
 enum ProjectStatus {
   DRAFT
   ACTIVE
-  ON_HOLD
+  IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+enum ProjectType {
+  KESIF
+  IHALE
 }
 
 enum AuditAction {
@@ -51,6 +56,7 @@ model Tenant {
   createdAt DateTime   @default(now())
   users     User[]
   projects  Project[]
+  customers Customer[]
   auditLogs AuditLog[]
 }
 
@@ -65,21 +71,64 @@ model User {
   status       String   @default("active")
   createdAt    DateTime @default(now())
   auditLogs    AuditLog[]
+  projectMembers ProjectMember[]
 
   @@unique([tenantId, email])
+}
+
+model Customer {
+  id          String    @id @default(uuid())
+  tenantId    String
+  tenant      Tenant    @relation(fields: [tenantId], references: [id])
+  name        String
+  email       String?
+  phone       String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  projects    Project[]
+
+  @@index([tenantId])
 }
 
 model Project {
   id          String        @id @default(uuid())
   tenantId    String
   tenant      Tenant        @relation(fields: [tenantId], references: [id])
+  customerId  String?
+  customer    Customer?     @relation(fields: [customerId], references: [id])
   name        String
   description String?
   status      ProjectStatus @default(DRAFT)
+  projectType ProjectType   @default(KESIF)
   budget      Decimal?
   startDate   DateTime?
   endDate     DateTime?
+  city        String?
+  district    String?
+  address     String?
+  area        Decimal?
   createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  members     ProjectMember[]
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@index([status])
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
 }
 
 model AuditLog {
