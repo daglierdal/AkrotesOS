@@ -1,427 +1,304 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { SummaryCards } from '@/components/SummaryCards';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  ArrowLeft,
-  Edit,
-  FileText,
-  DollarSign,
-  Users,
-  FolderKanban,
-  ShoppingCart,
-  Receipt,
-  Calendar,
-  MapPin,
-  TrendingUp,
-  TrendingDown,
-} from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { Sidebar } from "@/components/Sidebar";
+import { ChevronRight } from "lucide-react";
 
-interface ProjectDetail {
-  id: string;
-  name: string;
-  customer: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-  status: string;
-  stage: string;
-  area: number;
-  quotationAmount: number;
-  procurement: { budget: number; spent: number; percentage: number };
-  subcontractor: { budget: number; spent: number; percentage: number };
-  profitLoss: { amount: number; percentage: number; isPositive: boolean };
-  moduleStatus: { name: string; status: string }[];
-  team: { name: string; role: string }[];
-  disciplineSummary: { name: string; amount: number }[];
-}
+const tabs = [
+  { value: "ozet", label: "Özet" },
+  { value: "ekip", label: "Ekip" },
+  { value: "boq", label: "BOQ" },
+  { value: "teklif", label: "Teklif" },
+  { value: "satinalma", label: "Satınalma" },
+  { value: "taseron", label: "Taşeron" },
+  { value: "hakedis", label: "Hakediş" },
+  { value: "dokumanlar", label: "Dokümanlar" },
+];
 
-const mockProject: ProjectDetail = {
-  id: "1",
-  name: "MACFit Ankara Çankaya",
-  customer: "MACFit",
-  location: "Ankara, Çankaya",
-  startDate: "2026-01-15",
-  endDate: "2026-06-30",
-  status: "Devam Ediyor",
-  stage: "Uygulama",
-  area: 850,
-  quotationAmount: 375000,
-  procurement: { budget: 185000, spent: 165000, percentage: 89.2 },
-  subcontractor: { budget: 145000, spent: 120000, percentage: 82.8 },
-  profitLoss: { amount: 33000, percentage: 8.8, isPositive: true },
-  moduleStatus: [
-    { name: "BOQ", status: "Tamamlandı" },
-    { name: "Teklif", status: "Kabul Edildi" },
-    { name: "Satınalma", status: "Sipariş Verildi" },
-    { name: "Taşeron", status: "İş Başladı" },
-  ],
-  team: [
-    { name: "Asiye", role: "Planlama" },
-    { name: "Melike", role: "Satınalma" },
-    { name: "Erhan", role: "Taşeron" },
-    { name: "Buse", role: "Hakediş" },
-  ],
-  disciplineSummary: [
-    { name: "İnşaat", amount: 200000 },
-    { name: "Mekanik", amount: 80000 },
-    { name: "Elektrik", amount: 60000 },
-    { name: "Dekorasyon", amount: 35000 },
-  ],
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Tamamlandı':
-    case 'Kabul Edildi':
-      return 'bg-green-500/10 text-green-400 border-green-500/30';
-    case 'Sipariş Verildi':
-    case 'İş Başladı':
-    case 'Devam Ediyor':
-      return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
-    case 'Aktif':
-      return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-    case 'İptal Edildi':
-      return 'bg-red-500/10 text-red-400 border-red-500/30';
-    default:
-      return 'bg-[#222222] text-white';
-  }
-};
-
-const getRoleColor = (role: string) => {
-  switch (role) {
-    case 'Planlama':
-      return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
-    case 'Satınalma':
-      return 'bg-orange-500/10 text-orange-400 border-orange-500/30';
-    case 'Taşeron':
-      return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
-    case 'Hakediş':
-      return 'bg-pink-500/10 text-pink-400 border-pink-500/30';
-    default:
-      return 'bg-[#222222] text-white';
-  }
-};
-
-export default function ProjectDetailPage() {
-  const router = useRouter();
-  const [project] = useState<ProjectDetail>(mockProject);
-  const [isLoading] = useState(false);
-  const [error] = useState<string | null>(null);
-
-  const summaryCards = [
-    {
-      label: 'Teklif Tutarı',
-      value: `₺${project.quotationAmount.toLocaleString('tr-TR')}`,
-      icon: DollarSign,
-      iconColor: 'bg-[#4F8CFF]/10 text-[#4F8CFF]',
-    },
-    {
-      label: 'Satınalma',
-      value: `₺${project.procurement.spent.toLocaleString('tr-TR')}`,
-      subValue: `%${project.procurement.percentage} kullanıldı`,
-      icon: ShoppingCart,
-      iconColor: 'bg-orange-500/10 text-orange-400',
-    },
-    {
-      label: 'Taşeron',
-      value: `₺${project.subcontractor.spent.toLocaleString('tr-TR')}`,
-      subValue: `%${project.subcontractor.percentage} kullanıldı`,
-      icon: Users,
-      iconColor: 'bg-blue-500/10 text-blue-400',
-    },
-    {
-      label: 'Kar/Zarar',
-      value: `₺${project.profitLoss.amount.toLocaleString('tr-TR')}`,
-      subValue: `%${project.profitLoss.percentage}`,
-      icon: project.profitLoss.isPositive ? TrendingUp : TrendingDown,
-      iconColor: project.profitLoss.isPositive
-        ? 'bg-green-500/10 text-green-400'
-        : 'bg-red-500/10 text-red-400',
-    },
-  ];
-
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-2 border-[#4F8CFF] border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#888888]">Yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
-          <Button onClick={() => window.location.reload()}>Yeniden Dene</Button>
-        </div>
-      </div>
-    );
-  }
+export default function ProjectDetailPage({ params }: { params: { id: string } }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const projectId = params.id;
+  const [activeTab, setActiveTab] = useState("ozet");
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Custom Header */}
-      <div className="bg-[#111111] border-b border-[#222222] px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => router.push('/dashboard/projects')}
-              className="border-[#222222] bg-black text-white hover:bg-[#222222]"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold text-white">{project.name}</h1>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-sm text-[#888888]">{project.customer}</span>
-                <span className="text-[#444444]">•</span>
-                <div className="flex items-center gap-1 text-sm text-[#888888]">
-                  <MapPin className="w-3 h-3" />
-                  {project.location}
+    <div className="flex h-screen bg-black">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-8">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 mb-6 text-sm">
+            <Link href="/dashboard" className="text-zinc-400 hover:text-white cursor-pointer">Projeler</Link>
+            <ChevronRight className="w-4 h-4 text-zinc-600" />
+            <span className="text-white">MACFit Ankara Çankaya</span>
+          </div>
+
+          {/* Project Header Card */}
+          <div className="bg-[#111111] rounded-lg p-6 mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-[28px] text-white">MACFit Ankara Çankaya</h1>
+                  <span className="px-3 py-1 rounded-full text-xs bg-[#4F8CFF] text-white">
+                    Devam Ediyor
+                  </span>
+                </div>
+                <div className="text-sm text-zinc-400">
+                  MACFit • Keşif • Ankara/Çankaya • 850 m²
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <div className="text-sm text-zinc-400 mb-1">Bitiş</div>
+                  <div className="text-white">1 Haziran 2026</div>
+                </div>
+                <div className="relative w-20 h-20">
+                  <svg className="w-20 h-20 transform -rotate-90">
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#27272a"
+                      strokeWidth="8"
+                      fill="none"
+                    />
+                    <circle
+                      cx="40"
+                      cy="40"
+                      r="32"
+                      stroke="#4F8CFF"
+                      strokeWidth="8"
+                      fill="none"
+                      strokeDasharray={`${2 * Math.PI * 32}`}
+                      strokeDashoffset={`${2 * Math.PI * 32 * (1 - 0.35)}`}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-white">35%</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant="outline" className={getStatusColor(project.status)}>
-              {project.status}
-            </Badge>
-            <Button className="bg-[#4F8CFF] hover:bg-[#4F8CFF]/90 text-black">
-              <Edit className="w-4 h-4 mr-2" />
-              Düzenle
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-auto p-6">
-        <div className="space-y-6">
-          {/* Summary Cards */}
-          <SummaryCards cards={summaryCards} columns={4} />
 
           {/* Tabs */}
-          <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="bg-[#111111] border border-[#222222] p-1">
-              <TabsTrigger
-                value="overview"
-                className="data-[state=active]:bg-[#222222] data-[state=active]:text-white text-[#888888]"
-              >
-                Genel Bakış
-              </TabsTrigger>
-              <TabsTrigger
-                value="boq"
-                className="data-[state=active]:bg-[#222222] data-[state=active]:text-white text-[#888888]"
-              >
-                BOQ
-              </TabsTrigger>
-              <TabsTrigger
-                value="procurement"
-                className="data-[state=active]:bg-[#222222] data-[state=active]:text-white text-[#888888]"
-              >
-                Satınalma
-              </TabsTrigger>
-              <TabsTrigger
-                value="subcontractor"
-                className="data-[state=active]:bg-[#222222] data-[state=active]:text-white text-[#888888]"
-              >
-                Taşeron
-              </TabsTrigger>
-              <TabsTrigger
-                value="invoicing"
-                className="data-[state=active]:bg-[#222222] data-[state=active]:text-white text-[#888888]"
-              >
-                Hakediş
-              </TabsTrigger>
-            </TabsList>
+          <div className="mb-6">
+            <div className="flex gap-1 bg-zinc-900 p-1 rounded-lg w-fit">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`px-4 py-2 rounded-md text-sm transition-colors ${
+                    activeTab === tab.value
+                      ? "bg-zinc-800 text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            <TabsContent value="overview" className="mt-6 space-y-6">
-              {/* Module Status */}
-              <Card className="bg-[#111111] border-[#222222]">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">Modül Durumları</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-4">
-                    {project.moduleStatus.map((module) => (
-                      <div
-                        key={module.name}
-                        className="p-4 rounded-lg bg-black border border-[#222222]"
-                      >
-                        <p className="text-sm text-[#888888]">{module.name}</p>
-                        <Badge variant="outline" className={`mt-2 ${getStatusColor(module.status)}`}>
-                          {module.status}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Team & Discipline */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Team */}
-                <Card className="bg-[#111111] border-[#222222]">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-white flex items-center gap-2">
-                      <Users className="w-5 h-5 text-[#4F8CFF]" />
-                      Proje Ekibi
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {project.team.map((member) => (
-                        <div
-                          key={member.name}
-                          className="flex items-center justify-between p-3 rounded-lg bg-black border border-[#222222]"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-[#4F8CFF]/10 flex items-center justify-center">
-                              <span className="text-[#4F8CFF] font-semibold">
-                                {member.name.charAt(0)}
-                              </span>
-                            </div>
-                            <span className="font-medium text-white">{member.name}</span>
-                          </div>
-                          <Badge variant="outline" className={getRoleColor(member.role)}>
-                            {member.role}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Discipline Summary */}
-                <Card className="bg-[#111111] border-[#222222]">
-                  <CardHeader>
-                    <CardTitle className="text-lg text-white flex items-center gap-2">
-                      <FolderKanban className="w-5 h-5 text-[#4F8CFF]" />
-                      Disiplin Dağılımı
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {project.disciplineSummary.map((discipline) => (
-                        <div
-                          key={discipline.name}
-                          className="flex items-center justify-between p-3 rounded-lg bg-black border border-[#222222]"
-                        >
-                          <span className="text-white">{discipline.name}</span>
-                          <span className="font-medium text-[#4F8CFF]">
-                            ₺{discipline.amount.toLocaleString('tr-TR')}
-                          </span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-[#222222] border border-[#333333]">
-                        <span className="text-white font-medium">Toplam</span>
-                        <span className="font-bold text-[#4F8CFF]">
-                          ₺
-                          {project.disciplineSummary
-                            .reduce((sum, d) => sum + d.amount, 0)
-                            .toLocaleString('tr-TR')}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+          {/* Tab Content */}
+          {activeTab === "ozet" && (
+            <>
+              {/* Summary Metrics */}
+              <div className="grid grid-cols-4 gap-6 mb-6">
+                <div className="bg-[#111111] rounded-lg p-6">
+                  <div className="text-xs text-zinc-400 mb-2">Teklif Tutarı</div>
+                  <div className="text-2xl text-white">375.000 ₺</div>
+                </div>
+                <div className="bg-[#111111] rounded-lg p-6">
+                  <div className="text-xs text-zinc-400 mb-2">Satınalma</div>
+                  <div className="text-2xl text-white">185.000 ₺</div>
+                  <div className="text-xs text-zinc-400 mt-1">%49.3 harcanmış</div>
+                </div>
+                <div className="bg-[#111111] rounded-lg p-6">
+                  <div className="text-xs text-zinc-400 mb-2">Taşeron</div>
+                  <div className="text-2xl text-white">145.000 ₺</div>
+                  <div className="text-xs text-zinc-400 mt-1">%38.7 harcanmış</div>
+                </div>
+                <div className="bg-[#111111] rounded-lg p-6">
+                  <div className="text-xs text-zinc-400 mb-2">Kâr/Zarar</div>
+                  <div className="text-2xl text-green-500">+33.000 ₺</div>
+                  <div className="text-xs text-green-500 mt-1">%8.8</div>
+                </div>
               </div>
 
-              {/* Project Info */}
-              <Card className="bg-[#111111] border-[#222222]">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">Proje Bilgileri</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-6">
-                    <div>
-                      <p className="text-sm text-[#888888] mb-1">Başlangıç Tarihi</p>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#4F8CFF]" />
-                        <span className="text-white">
-                          {new Date(project.startDate).toLocaleDateString('tr-TR')}
-                        </span>
+              {/* Module Status & Team */}
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                {/* Module Status */}
+                <div className="bg-[#111111] rounded-lg p-6">
+                  <h3 className="text-white mb-4">Modül Durumları</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-sm text-zinc-400">BOQ</span>
                       </div>
+                      <span className="text-sm text-white">Tamamlandı</span>
                     </div>
-                    <div>
-                      <p className="text-sm text-[#888888] mb-1">Bitiş Tarihi</p>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4 text-[#4F8CFF]" />
-                        <span className="text-white">
-                          {new Date(project.endDate).toLocaleDateString('tr-TR')}
-                        </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-green-500" />
+                        <span className="text-sm text-zinc-400">Teklif</span>
                       </div>
+                      <span className="text-sm text-white">Kabul Edildi</span>
                     </div>
-                    <div>
-                      <p className="text-sm text-[#888888] mb-1">Alan</p>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-[#4F8CFF]" />
-                        <span className="text-white">{project.area} m²</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-purple-500" />
+                        <span className="text-sm text-zinc-400">Satınalma</span>
                       </div>
+                      <span className="text-sm text-white">Sipariş Verildi</span>
                     </div>
-                    <div>
-                      <p className="text-sm text-[#888888] mb-1">Aşama</p>
-                      <Badge variant="outline" className={getStatusColor(project.stage)}>
-                        {project.stage}
-                      </Badge>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-[#4F8CFF]" />
+                        <span className="text-sm text-zinc-400">Taşeron</span>
+                      </div>
+                      <span className="text-sm text-white">İş Başladı</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
 
-            <TabsContent value="boq" className="mt-6">
-              <Card className="bg-[#111111] border-[#222222]">
-                <CardContent className="p-12 text-center">
-                  <FileText className="w-12 h-12 mx-auto mb-4 text-[#888888] opacity-50" />
-                  <p className="text-lg font-medium text-white">BOQ Detayları</p>
-                  <p className="text-sm text-[#888888] mt-2">Bu sekme için içerik yakında eklenecek</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                {/* Team */}
+                <div className="bg-[#111111] rounded-lg p-6">
+                  <h3 className="text-white mb-4">Ekip</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-zinc-700" />
+                      <div>
+                        <div className="text-sm text-white">Asiye</div>
+                        <div className="text-xs text-zinc-400">Planlama</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-zinc-700" />
+                      <div>
+                        <div className="text-sm text-white">Melike</div>
+                        <div className="text-xs text-zinc-400">Satınalma</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-zinc-700" />
+                      <div>
+                        <div className="text-sm text-white">Erhan</div>
+                        <div className="text-xs text-zinc-400">Taşeron</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-zinc-700" />
+                      <div>
+                        <div className="text-sm text-white">Buse</div>
+                        <div className="text-xs text-zinc-400">Hakediş</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-            <TabsContent value="procurement" className="mt-6">
-              <Card className="bg-[#111111] border-[#222222]">
-                <CardContent className="p-12 text-center">
-                  <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-[#888888] opacity-50" />
-                  <p className="text-lg font-medium text-white">Satınalma Detayları</p>
-                  <p className="text-sm text-[#888888] mt-2">Bu sekme için içerik yakında eklenecek</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
+              {/* Discipline Budget Table */}
+              <div className="bg-[#111111] rounded-lg overflow-hidden">
+                <div className="p-6 border-b border-zinc-800">
+                  <h3 className="text-white">Disiplin İcmal Tablosu</h3>
+                </div>
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-zinc-800 bg-black">
+                      <th className="text-left px-6 py-4 text-sm text-zinc-400">Disiplin</th>
+                      <th className="text-left px-6 py-4 text-sm text-zinc-400">Malzeme Toplam</th>
+                      <th className="text-left px-6 py-4 text-sm text-zinc-400">İşçilik Toplam</th>
+                      <th className="text-left px-6 py-4 text-sm text-zinc-400">Genel Toplam</th>
+                      <th className="text-left px-6 py-4 text-sm text-zinc-400">Oran</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-zinc-800">
+                      <td className="px-6 py-4 text-sm text-white">İnşaat</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">120.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">80.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-white">200.000 ₺</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#4F8CFF] rounded-full" style={{ width: "53%" }} />
+                          </div>
+                          <span className="text-sm text-zinc-300 w-12">%53</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-zinc-800">
+                      <td className="px-6 py-4 text-sm text-white">Mekanik</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">50.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">30.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-white">80.000 ₺</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#4F8CFF] rounded-full" style={{ width: "21%" }} />
+                          </div>
+                          <span className="text-sm text-zinc-300 w-12">%21</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-zinc-800">
+                      <td className="px-6 py-4 text-sm text-white">Elektrik</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">35.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">25.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-white">60.000 ₺</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#4F8CFF] rounded-full" style={{ width: "16%" }} />
+                          </div>
+                          <span className="text-sm text-zinc-300 w-12">%16</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-zinc-800">
+                      <td className="px-6 py-4 text-sm text-white">Dekorasyon</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">20.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-zinc-300">15.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-white">35.000 ₺</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#4F8CFF] rounded-full" style={{ width: "9%" }} />
+                          </div>
+                          <span className="text-sm text-zinc-300 w-12">%9</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr className="bg-zinc-900">
+                      <td className="px-6 py-4 text-sm text-white">TOPLAM</td>
+                      <td className="px-6 py-4 text-sm text-white">225.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-white">150.000 ₺</td>
+                      <td className="px-6 py-4 text-sm text-white">375.000 ₺</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#4F8CFF] rounded-full" style={{ width: "100%" }} />
+                          </div>
+                          <span className="text-sm text-white w-12">%100</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
 
-            <TabsContent value="subcontractor" className="mt-6">
-              <Card className="bg-[#111111] border-[#222222]">
-                <CardContent className="p-12 text-center">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-[#888888] opacity-50" />
-                  <p className="text-lg font-medium text-white">Taşeron Detayları</p>
-                  <p className="text-sm text-[#888888] mt-2">Bu sekme için içerik yakında eklenecek</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="invoicing" className="mt-6">
-              <Card className="bg-[#111111] border-[#222222]">
-                <CardContent className="p-12 text-center">
-                  <Receipt className="w-12 h-12 mx-auto mb-4 text-[#888888] opacity-50" />
-                  <p className="text-lg font-medium text-white">Hakediş Detayları</p>
-                  <p className="text-sm text-[#888888] mt-2">Bu sekme için içerik yakında eklenecek</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+          {activeTab !== "ozet" && (
+            <div className="bg-[#111111] rounded-lg p-8 text-center">
+              <p className="text-zinc-400">{tabs.find(t => t.value === activeTab)?.label} içeriği yakında...</p>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
