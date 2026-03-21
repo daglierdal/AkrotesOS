@@ -29,7 +29,7 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-black">
       <div className="w-full max-w-md">
-        <div className="bg-[#111111] border border-[#222222] rounded-xl p-8 shadow-lg">
+        <div className="bg-[#111111] border border-zinc-800 rounded-xl p-8 shadow-lg">
           <h1 className="text-2xl font-bold text-white mb-8 text-center">
             AkrotesOS
           </h1>
@@ -47,7 +47,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black border border-[#222222] text-white rounded-lg px-4 py-2 focus:outline-none focus:border-[#4F8CFF]"
+                className="w-full bg-black border border-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-[#4F8CFF]"
                 placeholder="admin@akrotes.com.tr"
                 required
               />
@@ -59,7 +59,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black border border-[#222222] text-white rounded-lg px-4 py-2 focus:outline-none focus:border-[#4F8CFF]"
+                className="w-full bg-black border border-zinc-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-[#4F8CFF]"
                 placeholder="••••••••"
                 required
               />
@@ -74,7 +74,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-4 text-center text-sm text-[#888888]">
+          <p className="mt-4 text-center text-sm text-zinc-500">
             Demo: admin@akrotes.com.tr / akrotes2026
           </p>
         </div>

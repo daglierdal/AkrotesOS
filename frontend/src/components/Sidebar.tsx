@@ -11,8 +11,8 @@ const navItems = [
   { icon: FileText, label: "Teklif", href: null, disabled: true },
   { icon: ShoppingCart, label: "Satınalma", href: null, disabled: true },
   { icon: HardHat, label: "Taşeron", href: null, disabled: true },
-  { icon: Receipt, label: "Hakediş", href: null, disabled: true },
-  { icon: FileArchive, label: "Dökümanlar", href: null, disabled: true },
+  { icon: Receipt, label: "Taşeron Cari", href: null, disabled: true },
+  { icon: FileArchive, label: "Ödemeler", href: null, disabled: true },
 ];
 
 export function Sidebar() {
